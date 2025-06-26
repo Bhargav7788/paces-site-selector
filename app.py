@@ -28,26 +28,38 @@ def filter_sites(df, min_solar, max_distance, flood_ok):
 # ---------------------
 # App UI and Logic
 # ---------------------
-st.title("Where Should We Build? 🌍")
-st.caption("A simple site screening demo inspired by Paces")
+st.set_page_config(page_title="Paces Site Selector", layout="wide")
+
+st.markdown("""
+    <h1 style='text-align: center;'>Where Should We Build? 🌍</h1>
+    <h4 style='text-align: center; color: gray;'>A mini site screening demo inspired by Paces (YC S22)</h4>
+    <hr style='margin-top: 10px;'>
+""", unsafe_allow_html=True)
 
 # Sidebar filters
-st.sidebar.header("🔍 Filter Criteria")
-solar_score = st.sidebar.slider("Minimum Solar Score", 0, 100, 70)
-distance_limit = st.sidebar.slider("Max Distance to Road (km)", 1, 10, 5)
-flood_risks = st.sidebar.multiselect("Allowable Flood Risk", ["Low", "Medium", "High"], default=["Low", "Medium"])
+with st.sidebar:
+    st.header("🔍 Filter Criteria")
+    solar_score = st.slider("Minimum Solar Score", 0, 100, 70)
+    distance_limit = st.slider("Max Distance to Road (km)", 1, 10, 5)
+    flood_risks = st.multiselect("Allowable Flood Risk", ["Low", "Medium", "High"], default=["Low", "Medium"])
 
 # Load and filter data
 site_df = load_site_data()
 filtered_df = filter_sites(site_df, solar_score, distance_limit, flood_risks)
 
 st.success(f"{len(filtered_df)} site(s) match your criteria")
-st.dataframe(filtered_df)
+st.dataframe(filtered_df, use_container_width=True)
 
-# Map Visualization
-m = folium.Map(location=[37.5, -98], zoom_start=4)
+st.markdown("### 📍 Site Map")
+m = folium.Map(location=[38.5, -97.0], zoom_start=5)
 for _, row in filtered_df.iterrows():
     popup = f"Site: {row['Site ID']}<br>Solar: {row['Solar Score (0–100)']}<br>Risk: {row['Flood Risk']}"
     folium.Marker(location=[row['Latitude'], row['Longitude']], tooltip=row['Site ID'], popup=popup).add_to(m)
 
-st_folium(m, width=700, height=500)
+st_folium(m, width=1000, height=500)
+
+# Footer
+st.markdown("""
+---
+<p style='text-align: center;'>Built with ❤️ by Bhargav Mylavarapu • Inspired by @Paces (YC S22)</p>
+""", unsafe_allow_html=True)
